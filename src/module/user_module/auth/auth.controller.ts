@@ -13,10 +13,9 @@ import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from '../dto/login.dto';
 import DeviceDetector = require('device-detector-js');
-import { Representation } from 'src/common/helper/representation.helper';
+import { Representation } from '../../../common/helper/representation.helper';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { AuthGuard } from 'src/common/guard/auth.guard';
-import { request } from 'http';
+import { AuthGuard } from '../../../common/guard/auth.guard';
 
 @Controller('auth')
 @ApiTags('auth')

@@ -6,7 +6,7 @@ import {
   createFilterObject,
   Pagination,
   PaginationQuery,
-} from 'src/common/helper/pagination.helper';
+} from '../../common/helper/pagination.helper';
 
 @Injectable()
 export class UserService {

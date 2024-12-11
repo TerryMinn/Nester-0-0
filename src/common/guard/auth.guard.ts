@@ -7,10 +7,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Request } from 'express';
-import {
-  User,
-  UserDocument,
-} from 'src/module/user_module/entities/user.entities';
+import { User } from '../../module/user_module/entities/user.entities';
 import { decrypt } from 'vtoken';
 
 @Injectable()

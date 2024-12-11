@@ -2,11 +2,11 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiQuery } from '@nestjs/swagger';
 
 export class QueryParamsDto {
-  limit: number;
-  page: number;
-  sort_direction: string;
-  sort_by: string;
-  q: string;
+  limit?: number;
+  page?: number;
+  sort_direction?: string;
+  sort_by?: string;
+  q?: string;
 }
 
 export function QueryParams() {

@@ -1,12 +1,19 @@
-import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Controller,
+  Get,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { AuthGuard } from 'src/common/guard/auth.guard';
+import { AuthGuard } from '../../common/guard/auth.guard';
 import { UserService } from './user.service';
 import {
   QueryParams,
   QueryParamsDto,
-} from 'src/common/decorator/QueryParam.decorator';
-import { Representation } from 'src/common/helper/representation.helper';
+} from '../../common/decorator/QueryParam.decorator';
+import { Representation } from '../../common/helper/representation.helper';
 import { Response } from 'express';
 
 @Controller('user')
@@ -29,6 +36,8 @@ export class UserController {
         totalCount,
         query.limit,
       ).send();
-    } catch (e) {}
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
   }
 }
