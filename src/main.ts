@@ -17,9 +17,12 @@ async function bootstrap() {
     .setTitle('Start With Me🚀')
     .setDescription('The Start with me API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: { defaultModelsExpandDepth: -1, docExpansion: 'none' },
+  });
 
   // Listen
   await app.listen(3000);

@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { UserModule } from './module/user_module/user.module';
 
 @Module({
   imports: [
@@ -17,8 +18,9 @@ import { MongooseModule } from '@nestjs/mongoose';
           ? process.env.DB_LOCAL
           : process.env.DB_STAG,
     ),
+    UserModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

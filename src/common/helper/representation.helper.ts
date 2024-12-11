@@ -1,58 +1,122 @@
 import { HttpStatus } from '@nestjs/common';
 import { Response } from 'express';
 
-export class RepresentationHelper<T> {
+export class Representation<T> {
   message: string;
   page_count: number | null;
   D: T;
   total: number | null;
   limit: number | null;
-  statusCode: HttpStatus;
   response: Response;
+  currentPage: number;
 
   constructor(
     message: string,
+    D: T,
     response: Response,
-    statusCode: HttpStatus,
-    D?: T,
     total?: number,
     limit?: number,
   ) {
     this.message = message;
     this.D = D;
     this.response = response;
-    this.statusCode = statusCode;
     this.total = total || null;
-    this.limit = limit || null;
+    this.currentPage = Number(this.response.req.query.page) || 1;
+    this.limit = limit || 5;
     this.page_count = Math.ceil(this.total / this.limit);
   }
 
   private metaGenerator() {
-    return {
-      url: process.env.RESPONSE_URL,
-      endpoint: this.response.req.url,
-      method: this.response.req.method,
+    const urlObj = new URL(this.response.req.url, 'http://example.com');
+    const endpoint = this.response.req.url.split('?')[0];
+    const searchParams = new URLSearchParams(urlObj.search);
+    const limit = searchParams.get('limit')
+      ? parseInt(searchParams.get('limit')!, 10)
+      : 5;
+
+    const meta = {
+      path: process.env.RESPONSE_URL + endpoint,
+      current_page: this.currentPage,
+      from: (this.currentPage - 1) * limit + 1,
+      to:
+        Math.min(this.currentPage * limit, this.total) === this.total
+          ? this.page_count
+          : Math.min(this.currentPage * limit, this.total),
       total: this.total,
-      limit: this.limit,
-      page_count: this.page_count,
+      last_page: this.page_count,
     };
+
+    return meta;
   }
 
   private linkGenerator() {
+    const modifiedUrl = this.response.req.url.split('?')[0];
+    const urlObj = new URL(this.response.req.url, 'http://example.com');
+    const searchParams = new URLSearchParams(urlObj.search);
+    const defaultSortBy = 'createdAt';
+    const defaultSortDirection = 'desc';
+    const sortBy = searchParams.get('sort_by') || defaultSortBy;
+    const sortDirection =
+      searchParams.get('sort_direction') || defaultSortDirection;
+    const limit = searchParams.get('limit')
+      ? parseInt(searchParams.get('limit')!, 10)
+      : 5;
+    const page = searchParams.get('page')
+      ? parseInt(searchParams.get('page')!, 10)
+      : 1;
+    const q = searchParams.get('q') || '';
+    const pageCount = this.page_count || 10;
+
+    const generateQuery = (overrideParams: Record<string, string | number>) => {
+      const params = new URLSearchParams(searchParams);
+      Object.entries(overrideParams).forEach(([key, value]) => {
+        params.set(key, value.toString());
+      });
+      return `${process.env.RESPONSE_URL}${modifiedUrl}?${params.toString()}`;
+    };
+
     return {
-      self: `${process.env.RESPONSE_URL}${this.response.req.url}`,
+      first: generateQuery({
+        sort_by: sortBy,
+        sort_direction: sortDirection,
+        limit,
+        page: 1,
+      }),
+      last: generateQuery({
+        sort_by: sortBy,
+        sort_direction: sortDirection,
+        limit,
+        page: pageCount,
+      }),
       prev:
-        Number(this.response.req.query.page) > this.page_count
-          ? `${process.env.RESPONSE_URL + this.response.req.url}?limit=10&page=${Number(this.response.req.query.page) - 1}`
+        page > 1
+          ? generateQuery({
+              sort_by: sortBy,
+              sort_direction: sortDirection,
+              limit,
+              page: page - 1,
+            })
           : null,
-      next: `${process.env.RESPONSE_URL + this.response.req.url}?limit=10&page=${Number(this.response.req.query.page) <= this.page_count ? Number(this.response.req.query.page) + 1 : null}`,
-      first: `${process.env.RESPONSE_URL + this.response.req.url}?limit=10&page=1`,
-      last: `${process.env.RESPONSE_URL + this.response.req.url}?limit=10&page=${this.page_count}`,
+      next:
+        page < pageCount
+          ? generateQuery({
+              sort_by: sortBy,
+              sort_direction: sortDirection,
+              limit,
+              page: page + 1,
+            })
+          : null,
+      current: generateQuery({
+        sort_by: sortBy,
+        sort_direction: sortDirection,
+        limit,
+        page,
+      }),
     };
   }
 
   public send() {
-    return this.response.status(this.statusCode).json({
+    return this.response.status(HttpStatus.OK).json({
       con: true,
       message: this.message,
       statusCode: HttpStatus.OK,
@@ -63,27 +127,25 @@ export class RepresentationHelper<T> {
   }
 
   public sendSingle() {
-    return this.response.status(this.statusCode).json({
+    return this.response.status(HttpStatus.OK).json({
       con: true,
       message: this.message,
       statusCode: HttpStatus.OK,
       data: this.D,
-      meta: this.metaGenerator(),
     });
   }
 
   public sendMutate() {
-    return this.response.status(this.statusCode).json({
+    return this.response.status(HttpStatus.CREATED).json({
       con: true,
       message: this.message,
       statusCode: HttpStatus.CREATED,
       data: this.D,
-      meta: this.metaGenerator(),
     });
   }
 
   public sendDelete() {
-    return this.response.status(this.statusCode).json({
+    return this.response.status(HttpStatus.NO_CONTENT).json({
       con: true,
       message: this.message,
       statusCode: HttpStatus.NO_CONTENT,

@@ -1,15 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from '../entities/user.entities';
+import { DeviceType, User, UserDocument } from '../entities/user.entities';
 import { LoginDto } from '../dto/login.dto';
+import { encrypt } from 'vtoken';
+import { CreateUserDto } from '../dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
   constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async login(loginDto: LoginDto) {
-    const user = await this.userModel.findOne({ email: loginDto.email });
+    const user = await this.userModel
+      .findOne({ email: loginDto.email })
+      .select('+password +device +oauthProviders');
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -25,5 +29,35 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async generateToken(user: UserDocument, device: DeviceType) {
+    const token = encrypt(
+      user._id,
+      process.env.SECRET_KEY,
+      parseInt(process.env.EXPIRES_IN),
+    );
+
+    const updateUser = await this.userModel
+      .findOneAndUpdate(
+        { _id: user._id },
+        {
+          $push: {
+            device: { ...device, token },
+          },
+        },
+        { new: true },
+      )
+      .select('+device +oauthProviders');
+
+    return {
+      token,
+      user: updateUser.toObject(),
+      device: [...updateUser.toObject().device],
+    };
+  }
+
+  register(createUser: CreateUserDto) {
+    return this.userModel.create(createUser);
   }
 }

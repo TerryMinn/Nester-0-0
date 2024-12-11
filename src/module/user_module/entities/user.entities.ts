@@ -12,15 +12,53 @@ export enum Gender {
   OTHER = 'other',
 }
 
+export type DeviceType = {
+  browser: string;
+  os: string;
+  deviceType: string;
+};
+
+@Schema()
+class OAuthProvider {
+  @Prop({ type: String, required: true })
+  provider: string;
+
+  @Prop({ type: String, required: true })
+  providerId: string;
+
+  @Prop({ type: String })
+  accessToken?: string;
+
+  @Prop({ type: String })
+  refreshToken?: string;
+}
+
+const OAuthProviderSchema = SchemaFactory.createForClass(OAuthProvider);
+
+@Schema()
+class Profile {
+  @Prop()
+  picture?: string;
+
+  @Prop()
+  gender?: string;
+
+  @Prop()
+  date_of_birth?: Date;
+}
+
+const ProfileSchema = SchemaFactory.createForClass(Profile);
+
 @Schema({ timestamps: true })
 export class User {
   @Prop({ required: true, trim: true })
-  username: string;
+  name: string;
 
   @Prop({
     required: true,
     trim: true,
     lowercase: true,
+    unique: true,
   })
   email: string;
 
@@ -33,16 +71,21 @@ export class User {
   })
   password: string;
 
-  @Prop({ type: String, enum: Gender })
-  gender: Gender;
+  @Prop({ type: ProfileSchema, default: {} })
+  profile: Profile;
 
-  @Prop({ type: Object, default: {} })
-  profile: Record<string, any>;
-
-  @Prop({ type: MongooseSchema.Types.Mixed, default: [] })
+  @Prop({ type: MongooseSchema.Types.Mixed, default: [], select: false })
   device: [];
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: User.name, default: null })
+  @Prop({ type: [OAuthProviderSchema], default: [], select: false })
+  oauthProviders?: OAuthProvider[];
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: User.name,
+    default: null,
+    select: false,
+  })
   created_by: User;
 
   async checkPassword(
