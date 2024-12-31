@@ -57,7 +57,12 @@ export class AuthService {
     };
   }
 
-  register(createUser: CreateUserDto) {
+  async register(createUser: CreateUserDto) {
+    const user = await this.userModel.findOne({ email: createUser.email });
+    if (user) {
+      throw new Error('User already exists');
+    }
+
     return this.userModel.create(createUser);
   }
 }

@@ -34,14 +34,10 @@ export class AuthController {
       const deviceDetector = new DeviceDetector();
       const device = deviceDetector.parse(request.headers['user-agent']);
 
-      if (!device.client) {
-        throw new Error('You are device not supported');
-      }
-
       const deviceInfo = {
-        browser: device?.client?.name || 'Testing tool',
-        os: device?.os?.name || 'Testing Os',
-        deviceType: device.device?.type || 'Unknown',
+        browser: device?.client?.name || 'mobile',
+        os: device?.os?.name || 'Android Os',
+        deviceType: device.device?.type || 'Mobile',
       };
 
       const result = await this.authService.generateToken(user, deviceInfo);
@@ -66,18 +62,6 @@ export class AuthController {
         result,
         response,
       ).sendMutate();
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
-  }
-
-  @Get('profile')
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
-  async profile(@Res() response: Response, @Req() request: Request) {
-    try {
-      const user = request.payload;
-      return new Representation('Profile Data', user, response).sendSingle();
     } catch (e) {
       throw new BadRequestException(e.message);
     }

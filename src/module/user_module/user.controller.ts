@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Query,
+  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
@@ -14,7 +15,7 @@ import {
   QueryParamsDto,
 } from '../../common/decorator/QueryParam.decorator';
 import { Representation } from '../../common/helper/representation.helper';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('user')
 @ApiTags('user')
@@ -36,6 +37,18 @@ export class UserController {
         totalCount,
         query.limit,
       ).send();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  @Get('profile')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  async profile(@Res() response: Response, @Req() request: Request) {
+    try {
+      const user = request.payload;
+      return new Representation('Profile Data', user, response).sendSingle();
     } catch (e) {
       throw new BadRequestException(e.message);
     }
