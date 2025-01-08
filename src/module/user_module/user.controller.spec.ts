@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
-import { QueryParamsDto } from '../../common/decorator/QueryParam.decorator';
+import { QueryParamsDto } from '../../common/decorator/query-param.decorator';
 import { Representation } from '../../common/helper/representation.helper';
 import { Response } from 'express';
 

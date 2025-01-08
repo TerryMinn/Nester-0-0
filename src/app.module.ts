@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './module/user_module/user.module';
+import { MediaModule } from './module/media_module/media.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserModule } from './module/user_module/user.module';
           : process.env.DB_STAG,
     ),
     UserModule,
+    MediaModule,
   ],
   controllers: [],
   providers: [],

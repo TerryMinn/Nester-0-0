@@ -13,7 +13,7 @@ import { UserService } from './user.service';
 import {
   QueryParams,
   QueryParamsDto,
-} from '../../common/decorator/QueryParam.decorator';
+} from '../../common/decorator/query-param.decorator';
 import { Representation } from '../../common/helper/representation.helper';
 import { Request, Response } from 'express';
 
