@@ -27,14 +27,18 @@ export class ObjectStorageHelper {
   }
 
   async uploadImageObject(file: Express.Multer.File, folder: string) {
-    this.variants.map(async (variant) => {
+    const result: Record<string, string> = {};
+
+    for (const variant of this.variants) {
       const buffer = await this.resizeImage(
         file,
         variant.width,
         variant.height,
       );
 
-      const objectName = `${Date.now()}_${file.originalname}`;
+      const extension = file.mimetype.split('/')[1];
+
+      const objectName = `${Date.now()}_${variant.name}.${extension}`;
 
       await this.minioClient.putObject(
         this.bucketName,
@@ -42,11 +46,11 @@ export class ObjectStorageHelper {
         buffer,
       );
 
-      const Location = `${process.env.SPACE_URL}/${this.bucketName}/${folder}/${objectName}`;
+      const Location = `${process.env.OBJ_URL}/${this.bucketName}/${folder}/${objectName}`;
 
-      this.result[variant.name] = Location;
-    });
+      result[variant.name] = Location;
+    }
 
-    return this.result;
+    return result;
   }
 }
