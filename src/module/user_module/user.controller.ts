@@ -1,7 +1,9 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
+  Patch,
   Query,
   Req,
   Res,
@@ -16,6 +18,7 @@ import {
 } from '../../common/decorator/query-param.decorator';
 import { Representation } from '../../common/helper/representation.helper';
 import { Request, Response } from 'express';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 @ApiTags('user')
@@ -43,12 +46,29 @@ export class UserController {
   }
 
   @Get('profile')
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
   async profile(@Res() response: Response, @Req() request: Request) {
     try {
       const user = request.payload;
       return new Representation('Profile Data', user, response).sendSingle();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  @Patch('profile')
+  async profileUpdate(
+    @Res() response: Response,
+    @Req() request: Request,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    try {
+      const user = request.payload;
+      const result = await this.userService.profileUpdate(user, updateUserDto);
+      return new Representation(
+        'Profile Updated',
+        result,
+        response,
+      ).sendSingle();
     } catch (e) {
       throw new BadRequestException(e.message);
     }

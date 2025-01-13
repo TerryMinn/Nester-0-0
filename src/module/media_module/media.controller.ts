@@ -28,8 +28,8 @@ import { Representation } from 'src/common/helper/representation.helper';
 
 @Controller('media')
 @ApiTags('media')
-// @UseGuards(AuthGuard)
-// @ApiBearerAuth()
+@UseGuards(AuthGuard)
+@ApiBearerAuth()
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 

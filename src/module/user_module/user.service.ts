@@ -7,6 +7,8 @@ import {
   Pagination,
   PaginationQuery,
 } from '../../common/helper/pagination.helper';
+import { Request } from 'express';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -35,5 +37,12 @@ export class UserService {
         .populate('created_by'),
       totalCount: all,
     };
+  }
+
+  profileUpdate(user: Request['payload'], updateUserDto: UpdateUserDto) {
+    return this.userModel
+      .findOneAndUpdate({ _id: user._id }, updateUserDto, { new: true })
+      .select('+created_by')
+      .populate('created_by');
   }
 }
