@@ -23,7 +23,7 @@ export class AuthGuard implements CanActivate {
       const user = decrypt(token, process.env.SECRET_KEY);
       const result = await this.userModal
         .findById(user)
-        .select('+device +oauthProviders');
+        .select('+oauth_providers');
 
       request.payload = result.toObject();
     } catch (e) {

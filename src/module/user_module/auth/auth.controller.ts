@@ -8,14 +8,12 @@ import {
   BadRequestException,
   Get,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from '../dto/login.dto';
-import DeviceDetector = require('device-detector-js');
 import { Representation } from '../../../common/helper/representation.helper';
 import { CreateUserDto } from '../dto/create-user.dto';
-import { AuthGuard } from '../../../common/guard/auth.guard';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -31,16 +29,7 @@ export class AuthController {
     try {
       const user = await this.authService.login(loginDto);
 
-      const deviceDetector = new DeviceDetector();
-      const device = deviceDetector.parse(request.headers['user-agent']);
-
-      const deviceInfo = {
-        browser: device?.client?.name || 'mobile',
-        os: device?.os?.name || 'Android Os',
-        deviceType: device.device?.type || 'Mobile',
-      };
-
-      const result = await this.authService.generateToken(user, deviceInfo);
+      const result = await this.authService.generateToken(user);
 
       return new Representation(
         'Login Success Fully',

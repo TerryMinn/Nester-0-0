@@ -11,7 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { DeviceType, Gender } from '../entities/user.entities';
+import { Gender } from '../entities/user.entities';
 import { ApiProperty } from '@nestjs/swagger';
 
 class OAuthProviderDto {
@@ -111,7 +111,5 @@ export class CreateUserDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OAuthProviderDto)
-  oauthProviders?: OAuthProviderDto[];
-
-  device?: DeviceType[];
+  oauth_providers?: OAuthProviderDto[];
 }

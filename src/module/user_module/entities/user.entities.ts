@@ -12,12 +12,6 @@ export enum Gender {
   OTHER = 'other',
 }
 
-export type DeviceType = {
-  browser: string;
-  os: string;
-  deviceType: string;
-};
-
 @Schema()
 class OAuthProvider {
   @Prop({ type: String, required: true })
@@ -74,11 +68,8 @@ export class User {
   @Prop({ type: ProfileSchema, default: {} })
   profile: Profile;
 
-  @Prop({ type: MongooseSchema.Types.Mixed, default: [], select: false })
-  device: [];
-
   @Prop({ type: [OAuthProviderSchema], default: [], select: false })
-  oauthProviders?: OAuthProvider[];
+  oauth_providers?: OAuthProvider[];
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
