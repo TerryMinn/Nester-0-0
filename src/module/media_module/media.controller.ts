@@ -7,8 +7,15 @@ import {
   UseInterceptors,
   UploadedFiles,
   UploadedFile,
+  Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Response, Request, response } from 'express';
 import { MediaService } from './media.service';
 import { AuthGuard } from 'src/common/guard/auth.guard';
@@ -35,6 +42,12 @@ export class MediaController {
       required: ['file'],
     },
   })
+  @ApiQuery({
+    name: 'v',
+    required: false,
+    type: String,
+    description: 'if you want to split a version of a image "yes" or "no"',
+  })
   @Post('upload/photo')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('file'))
@@ -42,10 +55,10 @@ export class MediaController {
     @Res() response: Response,
     @UploadedFile(ImageValidationPipe)
     file: Express.Multer.File,
+    @Query('v') version?: 'versoin',
   ) {
     try {
-      const res = await this.mediaService.uploadPhoto(file);
-
+      const res = await this.mediaService.uploadPhoto(file, version);
       return new Representation('Success', res, response).sendSingle();
     } catch (e) {
       throw new BadRequestException(e.message);

@@ -26,29 +26,50 @@ export class ObjectStorageHelper {
     return await sharp(file.buffer).resize(width, height).toBuffer();
   }
 
-  async uploadImageObject(file: Express.Multer.File, folder: string) {
+  async uploadImageObject(
+    file: Express.Multer.File,
+    folder: string,
+    v: string,
+  ) {
     const result: Record<string, string> = {};
 
-    for (const variant of this.variants) {
-      const buffer = await this.resizeImage(
-        file,
-        variant.width,
-        variant.height,
-      );
+    if (v === 'yes') {
+      for (const variant of this.variants) {
+        let buffer: Buffer;
+        if (v === 'yes') {
+          buffer = await this.resizeImage(file, variant.width, variant.height);
+        }
 
+        buffer = file.buffer;
+
+        const extension = file.mimetype.split('/')[1];
+
+        const objectName = `${Date.now()}_${variant.name}.${extension}`;
+
+        await this.minioClient.putObject(
+          this.bucketName,
+          `${folder}/${objectName}`,
+          buffer,
+        );
+
+        const Location = `${process.env.OBJ_URL}/${this.bucketName}/${folder}/${objectName}`;
+
+        result[variant.name] = Location;
+      }
+    } else {
       const extension = file.mimetype.split('/')[1];
 
-      const objectName = `${Date.now()}_${variant.name}.${extension}`;
+      const objectName = `${Date.now()}.${extension}`;
 
       await this.minioClient.putObject(
         this.bucketName,
         `${folder}/${objectName}`,
-        buffer,
+        file.buffer,
       );
 
       const Location = `${process.env.OBJ_URL}/${this.bucketName}/${folder}/${objectName}`;
 
-      result[variant.name] = Location;
+      result['original'] = Location;
     }
 
     return result;
