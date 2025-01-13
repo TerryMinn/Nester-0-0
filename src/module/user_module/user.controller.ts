@@ -68,7 +68,7 @@ export class UserController {
         'Profile Updated',
         result,
         response,
-      ).sendSingle();
+      ).sendMutate();
     } catch (e) {
       throw new BadRequestException(e.message);
     }
