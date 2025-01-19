@@ -5,12 +5,13 @@ import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { IsOldPasswordCorrect } from 'src/common/validator/is-old-password.validator';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [AuthController, UserController],
-  providers: [AuthService, UserService],
+  providers: [AuthService, UserService, IsOldPasswordCorrect],
 })
 export class UserModule {}

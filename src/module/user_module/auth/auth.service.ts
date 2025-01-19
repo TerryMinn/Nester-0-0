@@ -1,8 +1,12 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '../entities/user.entities';
-import { LoginDto } from '../dto/login.dto';
+import { ChangePasswordDto, LoginDto } from '../dto/auth.dto';
 import { encrypt } from 'vtoken';
 import { CreateUserDto } from '../dto/create-user.dto';
 
@@ -55,5 +59,35 @@ export class AuthService {
     }
 
     return this.userModel.create(createUser);
+  }
+
+  async isOldPasswordCorrect(userEmail: string, oldPassword: string) {
+    const user = await this.userModel
+      .findOne({ email: userEmail })
+      .select('+password');
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return await user.checkPassword(oldPassword, user.password);
+  }
+
+  async changePassword(
+    changePasswordBody: ChangePasswordDto,
+    userId: Types.ObjectId,
+  ) {
+    const user = await this.userModel.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const result = await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      { password: changePasswordBody.new_password },
+      { new: true },
+    );
+
+    return result;
   }
 }
