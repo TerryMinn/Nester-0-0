@@ -6,12 +6,6 @@ export type UserDocument = HydratedDocument<User> & {
   checkPassword: (credentialPass: string, hashed: string) => Promise<boolean>;
 };
 
-export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  OTHER = 'other',
-}
-
 @Schema()
 class OAuthProvider {
   @Prop({ type: String, required: true })
@@ -35,10 +29,10 @@ class Profile {
   picture?: string;
 
   @Prop()
-  gender?: string;
+  phone?: string;
 
   @Prop()
-  date_of_birth?: Date;
+  bio?: string;
 }
 
 const ProfileSchema = SchemaFactory.createForClass(Profile);

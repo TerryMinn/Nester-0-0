@@ -12,10 +12,11 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Response, Request } from 'express';
 import { AuthService } from './auth.service';
-import { ChangePasswordDto, CheckPasswordDTO, LoginDto } from '../dto/auth.dto';
+import { ChangePasswordDto, LoginDto } from '../dto/auth.dto';
 import { Representation } from '../../../common/helper/representation.helper';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { AuthGuard } from 'src/common/guard/auth.guard';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -60,24 +61,6 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Post('check-old-password')
-  async checkOldPassword(
-    @Body() checkOldPasswordDto: CheckPasswordDTO,
-    @Res() response: Response,
-  ) {
-    try {
-      return new Representation(
-        'Password is correct',
-        null,
-        response,
-      ).sendSingle();
-    } catch (e) {
-      throw new BadRequestException(e.message);
-    }
-  }
-
-  @UseGuards(AuthGuard)
-  @ApiBearerAuth()
   @Patch('change-password')
   async changePassword(
     @Body() changePasswordBody: ChangePasswordDto,
@@ -93,6 +76,27 @@ export class AuthController {
 
       return new Representation(
         'Password Changed Successfully',
+        result,
+        response,
+      ).sendMutate();
+    } catch (e) {
+      throw new BadRequestException(e.message);
+    }
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Patch('edit-info')
+  async editInfo(
+    @Req() request: Request,
+    @Res() response: Response,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    try {
+      const { _id } = request.payload;
+      const result = await this.authService.editInfo(_id, updateUserDto);
+      return new Representation(
+        'Info Changed Successfully',
         result,
         response,
       ).sendMutate();

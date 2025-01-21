@@ -9,6 +9,7 @@ import { User, UserDocument } from '../entities/user.entities';
 import { ChangePasswordDto, LoginDto } from '../dto/auth.dto';
 import { encrypt } from 'vtoken';
 import { CreateUserDto } from '../dto/create-user.dto';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -61,33 +62,33 @@ export class AuthService {
     return this.userModel.create(createUser);
   }
 
-  async isOldPasswordCorrect(userEmail: string, oldPassword: string) {
-    const user = await this.userModel
-      .findOne({ email: userEmail })
-      .select('+password');
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    return await user.checkPassword(oldPassword, user.password);
-  }
-
   async changePassword(
     changePasswordBody: ChangePasswordDto,
     userId: Types.ObjectId,
   ) {
-    const user = await this.userModel.findById(userId);
+    const user = await this.userModel.findById(userId).select('+password');
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const result = await this.userModel.findOneAndUpdate(
-      { _id: userId },
-      { password: changePasswordBody.new_password },
-      { new: true },
+    const isPasswordCorrect = await user.checkPassword(
+      changePasswordBody.old_password,
+      user.password,
     );
 
-    return result;
+    if (!isPasswordCorrect) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    user.password = changePasswordBody.new_password;
+    await user.save();
+    return user;
+  }
+
+  async editInfo(userId: Types.ObjectId, updateUserDto: UpdateUserDto) {
+    return await this.userModel.findByIdAndUpdate(userId, updateUserDto, {
+      new: true,
+    });
   }
 }

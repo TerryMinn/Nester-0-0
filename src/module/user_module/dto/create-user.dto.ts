@@ -3,15 +3,11 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsDateString,
   ValidateNested,
   IsArray,
-  Min,
-  IsEnum,
   MinLength,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { Gender } from '../entities/user.entities';
 import { ApiProperty } from '@nestjs/swagger';
 
 class OAuthProviderDto {
@@ -43,26 +39,25 @@ class ProfileDto {
   })
   picture?: string;
 
-  @IsEnum(Gender)
+  @IsOptional()
   @IsString()
-  @IsOptional()
-  @ApiProperty({
-    default: Gender.MALE,
-    description: 'The gender of the user',
-    required: true,
-    type: String,
-  })
-  gender: Gender;
-
-  @IsOptional()
-  @IsDateString()
   @ApiProperty({
     type: String,
     required: false,
-    description: 'The date of birth of the user',
-    default: '2000-01-01',
+    description: 'User phone number',
+    default: '09420306085',
   })
-  date_of_birth?: string;
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'User bio',
+    default: 'I am a user',
+  })
+  bio?: string;
 }
 
 export class CreateUserDto {
